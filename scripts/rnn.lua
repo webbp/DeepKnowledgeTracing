@@ -1,7 +1,7 @@
 -- opencl cltorch clnn
-require 'nn'
---require 'cltorch'
---require 'clnn'
+--require 'nn'
+require 'cltorch'
+require 'clnn'
 require 'nngraph'
 require 'util'
 require 'utilExp'

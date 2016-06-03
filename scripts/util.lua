@@ -81,9 +81,7 @@ function maskRows(m, y)
 			table.insert(nonZero, i)
 		end
 	end
-  -- opencl cltorch clnn
 	return m:index(1,torch.LongTensor(nonZero))
-	--return m:index(1,torch.ClLongTensor(nonZero))
 end
 
 

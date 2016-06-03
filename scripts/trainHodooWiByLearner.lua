@@ -1,7 +1,7 @@
 -- opencl cltorch clnn
-require 'nn'
---require 'cltorch'
---require 'clnn'
+--require 'nn'
+require 'cltorch'
+require 'clnn'
 require 'optim'
 require 'dataHodooWiByLearner'
 require 'nngraph'
@@ -113,9 +113,6 @@ function trainMiniBatch(rnn, data, mini_batch_size, file, modelId)
 				miniTests = 0
 				--rate = rate * decay_rate
 			end
-      if(i == 10) then
-        os.exit()
-      end
 		end
 		local auc, accuracy = evaluate(rnn, data)
 		local avgErr = sumErr / numTests
