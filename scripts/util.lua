@@ -81,15 +81,18 @@ function maskRows(m, y)
 			table.insert(nonZero, i)
 		end
 	end
+  -- opencl cltorch clnn
 	return m:index(1,torch.LongTensor(nonZero))
+	--return m:index(1,torch.ClLongTensor(nonZero))
 end
 
 
 function shuffle(a)
 	local rnd,trem,getn,ins = math.random,table.remove,table.getn,table.insert;
+--    return a;
     local r = {};
     while getn(a) > 0 do
-        ins(r, trem(a, rnd(getn(a))));
+      ins(r, trem(a, rnd(getn(a))));
     end
     return r;
 end

@@ -1,9 +1,13 @@
+-- opencl cltorch clnn
 require 'nn'
+--require 'cltorch'
+--require 'clnn'
 require 'nngraph'
 require 'util'
 require 'utilExp'
 require 'lfs'
 local class = require 'class'
+require 'pprint'
 
 RNN = class.new('RNN')
 
@@ -104,6 +108,7 @@ function RNN:fprop(batch)
 		local inputX, inputY, truth = self:getInputs(batch, k)
 		local mask = self:getMask(batch, k)
 		inputs[k]  = {state, inputX, inputY, truth};
+--    pprint(inputs[k])
 		local output = self.layers[k]:forward(inputs[k]);
 		state = output[3]
 		local stepErr = output[2][1] * n_students	-- scalar
@@ -111,7 +116,38 @@ function RNN:fprop(batch)
 		sumErr = sumErr + stepErr;
 	end
 	return sumErr, numTests, inputs
-end	
+end
+
+function RNN:fprop2(batch)
+	local n_steps = getNSteps(batch)
+	local n_students = #batch
+	assert(n_steps >= 1)
+	print(self.max_steps)
+	assert(n_steps < self.max_steps)
+	local inputs = {};
+	local sumErr = 0;
+	local numTests = 0
+	local state = self.start:forward(torch.zeros(n_students, 1))
+  n_steps=1
+	for k = 1,n_steps do
+		local inputX, inputY, truth = self:getInputs(batch, k)
+		local mask = self:getMask(batch, k)
+		inputs[k]  = {state, inputX, inputY, truth};
+		local output = self.layers[k]:forward(inputs[k]);
+
+    print('output[1][100]')
+    pprint(output[1][100])
+
+    print('output[3]')
+    pprint(output[3])
+
+    state = output[3]
+		local stepErr = output[2][1] * n_students	-- scalar
+		numTests = mask:sum() + numTests
+		sumErr = sumErr + stepErr;
+	end
+	return sumErr, numTests, inputs
+end
 
 function RNN:save(dir)
 	lfs.mkdir(dir)
@@ -174,17 +210,22 @@ function RNN:getInputs(batch, k)
 			local currentCorrect = answers['correct'][k]
 			local nextCorrect    = answers['correct'][k + 1]
 			
+--print('q'..currentId .. ':' .. currentCorrect .. ' -> ' .. 'q' .. nextId .. ':' .. nextCorrect)
 			local xIndex = self:getXIndex(currentCorrect, currentId)
+--print('x' ..xIndex)
 			inputX[i][xIndex] = 1
 			
 			truth[i] = nextCorrect
 			inputY[i][nextId] = 1
+
 		end
 	end
 	--compressed sensing
 	if(self.compressedSensing) then
 		inputX = inputX * self.basis
 	end
+--pprint(inputX)
+--pprint(inputY)
 	return inputX, inputY, truth
 end
 
@@ -194,6 +235,7 @@ function RNN:getXIndex(correct, id)
 	local xIndex = correct * self.n_questions + id
 	assert(xIndex >= 1)
 	assert(xIndex ~= nil)
+--  print('xxx '..xIndex..' '.. 2*self.n_questions .. ' xxx')
 	assert(xIndex <= 2 * self.n_questions)
 	return xIndex
 end
@@ -272,13 +314,14 @@ function RNN:getPredictionTruth(batch)
 		local inputX, inputY, truth = self:getInputs(batch, k)
 		inputX = inputX
 		inputY = inputY
+--pprint(inputX)
+--pprint(inputY)
 		local inputs = {state, inputX, inputY, truth};
 		local output = self.layer:forward(inputs);
 		state = output[3]:clone()
-		
+--pprint(output[1][60])
 		local mask = self:getMask(batch, k)
 		local pred = output[1]:double()
-		
 		for i = 1,n_students do
 			if(mask[i] == 1) then
 				predictionTruth = {

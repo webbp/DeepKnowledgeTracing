@@ -1,3 +1,5 @@
+local inspect = require 'inspect'
+
 function getNTests(batch)
 	local n_steps = getNSteps(batch)
 	local n_students = #batch
@@ -85,7 +87,7 @@ function evaluate(rnn, data)
 		local guess = 0
 		if(p['pred'] > 0.5) then guess = 1 end
 		if(guess == p['truth']) then correct = correct + 1 end
-
+--print(guess)
 		local fpr = falsePositives / totalNegatives
 		local tpr = truePositives / totalPositives
 		if(i % 500 == 0) then
@@ -141,6 +143,5 @@ function semiSortedMiniBatches(dataset, mini_batch_size, trimToBatchSize)
 	for i, s in ipairs(shuffle(getKeyset(miniBatches))) do
 		table.insert(shuffledBatches, miniBatches[s])
 	end
-
 	return shuffledBatches
 end
